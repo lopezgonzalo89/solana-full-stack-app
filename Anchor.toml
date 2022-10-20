@@ -1,11 +1,8 @@
-[features]
-seeds = false
-skip-lint = false
 [programs.localnet]
-mysolanaapp = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+mysolanaapp = "3XfK5ix7tmAMzx8QqwthSy3dMHRTYsJJpiNkwZ3RP3nw"
 
 [registry]
-url = "https://api.apr.dev"
+url = "https://anchor.projectserum.com"
 
 [provider]
 cluster = "localnet"
