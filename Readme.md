@@ -90,11 +90,11 @@ node copyIdl.js
 12. Change into the **app** directory and install the dependencies:
 
 ```sh
-cd app && npm install
+cd app && yarn
 ```
 
 13. Run the client-side app
 
 ```sh
-npm start
+yarn run start
 ```
