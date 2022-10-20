@@ -1,7 +1,7 @@
 import "./App.css";
 import { useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { Program, Provider, web3 } from "@project-serum/anchor";
+import { Program, AnchorProvider, web3 } from "@project-serum/anchor";
 import idl from "./idl.json";
 
 import { getPhantomWallet } from "@solana/wallet-adapter-wallets";
@@ -38,7 +38,11 @@ function App() {
     const network = "http://127.0.0.1:8899";
     const connection = new Connection(network, opts.preflightCommitment);
 
-    const provider = new Provider(connection, wallet, opts.preflightCommitment);
+    const provider = new AnchorProvider(
+      connection,
+      wallet,
+      opts.preflightCommitment
+    );
     return provider;
   }
 
@@ -48,14 +52,17 @@ function App() {
     const program = new Program(idl, programID, provider);
     try {
       /* interact with the program via rpc */
-      await program.rpc.create({
-        accounts: {
+      await program.methods
+        .create()
+        .accounts({
           baseAccount: baseAccount.publicKey,
           user: provider.wallet.publicKey,
           systemProgram: SystemProgram.programId,
-        },
-        signers: [baseAccount],
-      });
+        })
+        .signers(baseAccount)
+        .rpc({
+          commitment: "confirmed",
+        });
 
       const account = await program.account.baseAccount.fetch(
         baseAccount.publicKey
@@ -70,11 +77,14 @@ function App() {
   async function increment() {
     const provider = await getProvider();
     const program = new Program(idl, programID, provider);
-    await program.rpc.increment({
-      accounts: {
+    await program.methods
+      .increment()
+      .accounts({
         baseAccount: baseAccount.publicKey,
-      },
-    });
+      })
+      .rpc({
+        commitment: "confirmed",
+      });
 
     const account = await program.account.baseAccount.fetch(
       baseAccount.publicKey

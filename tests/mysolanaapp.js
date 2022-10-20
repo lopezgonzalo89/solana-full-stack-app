@@ -4,20 +4,24 @@ const { SystemProgram } = anchor.web3;
 
 describe("mysolanaapp", () => {
   /* create and set a Provider */
-  const provider = anchor.Provider.env();
+  const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
   const program = anchor.workspace.Mysolanaapp;
   it("Creates a counter)", async () => {
     /* Call the create function via RPC */
     const baseAccount = anchor.web3.Keypair.generate();
-    await program.rpc.create({
-      accounts: {
+
+    await program.methods
+      .create()
+      .accounts({
         baseAccount: baseAccount.publicKey,
         user: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
-      },
-      signers: [baseAccount],
-    });
+      })
+      .signers(baseAccount)
+      .rpc({
+        commitment: "confirmed",
+      });
 
     /* Fetch the account and check the value of count */
     const account = await program.account.baseAccount.fetch(
@@ -31,11 +35,14 @@ describe("mysolanaapp", () => {
   it("Increments the counter", async () => {
     const baseAccount = _baseAccount;
 
-    await program.rpc.increment({
-      accounts: {
+    await program.methods
+      .increment()
+      .accounts({
         baseAccount: baseAccount.publicKey,
-      },
-    });
+      })
+      .rpc({
+        commitment: "confirmed",
+      });
 
     const account = await program.account.baseAccount.fetch(
       baseAccount.publicKey
