@@ -39,7 +39,7 @@ anchor build
 5. Fetch the project ID for the build:
 
 ```sh
-solana address -k target/deploy/mysolanaapp-keypair.json
+bash ./getProgramId.sh
 ```
 
 6. Update the project ID in the Rust program in lib.rs:
