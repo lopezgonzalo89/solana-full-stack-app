@@ -1,7 +1,7 @@
 import "./App.css";
 import { useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { Program, AnchorProvider, web3 } from "@project-serum/anchor";
+import { Program, AnchorProvider, web3, utils } from "@project-serum/anchor";
 import idl from "./idl.json";
 
 import { getPhantomWallet } from "@solana/wallet-adapter-wallets";
@@ -29,6 +29,7 @@ const opts = {
 const programID = new PublicKey(idl.metadata.address);
 
 function App() {
+  const [initialized, setInitialized] = useState(false);
   const [value, setValue] = useState(null);
   const wallet = useWallet();
 
@@ -44,6 +45,37 @@ function App() {
       opts.preflightCommitment
     );
     return provider;
+  }
+
+  async function initialize() {
+    const provider = await getProvider();
+    const program = new Program(idl, programID, provider);
+
+    const [programAccountPDA] = await PublicKey.findProgramAddress(
+      [utils.bytes.utf8.encode("initialize")],
+      program.programId
+    );
+
+    await program.methods
+      .initialize()
+      .accounts({
+        programAccount: programAccountPDA,
+        user: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([])
+      .rpc({
+        commitment: "confirmed",
+      });
+
+    console.log("%c POST INITIALIZE", "color: green");
+
+    const programAccount = await program.account.programAccount.fetch(
+      programAccountPDA
+    );
+
+    console.log("Count: ", programAccount.count.toString());
+    setInitialized(true);
   }
 
   async function createCounter() {
@@ -77,10 +109,17 @@ function App() {
   async function increment() {
     const provider = await getProvider();
     const program = new Program(idl, programID, provider);
+
+    const [programAccountPDA] = await PublicKey.findProgramAddress(
+      [utils.bytes.utf8.encode("initialize")],
+      program.programId
+    );
+
     await program.methods
       .increment()
       .accounts({
         baseAccount: baseAccount.publicKey,
+        programAccount: programAccountPDA,
       })
       .rpc({
         commitment: "confirmed",
@@ -110,13 +149,18 @@ function App() {
     return (
       <div className="App">
         <div>
+          {!initialized && (
+            <button onClick={initialize}>Initialize Program</button>
+          )}
           {!value && <button onClick={createCounter}>Create counter</button>}
           {value && <button onClick={increment}>Increment counter</button>}
 
           {value && value >= Number(0) ? (
             <h2>{value}</h2>
+          ) : initialized ? (
+            <h2>Counter not created</h2>
           ) : (
-            <h3>Please create the counter.</h3>
+            <h2>Program not initialized</h2>
           )}
         </div>
       </div>

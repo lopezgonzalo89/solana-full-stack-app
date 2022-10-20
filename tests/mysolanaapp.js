@@ -32,12 +32,12 @@ describe("MySolanaApp", () => {
         commitment: "confirmed",
       });
 
-    const account = await program.account.programAccount.fetch(
+    const programAccount = await program.account.programAccount.fetch(
       programAccountPDA
     );
 
-    console.log("Count 0: ", account.count.toString());
-    assert.ok(account.count.toString() == 0);
+    console.log("Count 0: ", programAccount.count.toString());
+    assert.ok(programAccount.count.toString() == 0);
   });
 
   it("Creates and initializes an account in a single atomic transaction (simplified)", async () => {
