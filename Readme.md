@@ -24,67 +24,22 @@ git clone git@github.com:dabit3/complete-guide-to-full-stack-solana.git
 
 2. Change into the project directory you'd like to run
 
-3. Install the dependencies
+3. Run the build script
 
 ```sh
-yarn
-```
-
-4. Build the anchor project
-
-```sh
-anchor build
-```
-
-5. Fetch the project ID for the build:
-
-```sh
-bash ./getProgramId.sh
-```
-
-6. Update the project ID in the Rust program in lib.rs:
-
-```rust
-// mysolanaapp/src/lib.rs
-declare_id!("your-program-id");
-```
-
-and in Anchor.toml:
-
-```toml
-# Anchor.toml
-[programs.localnet]
-mysolanaapp = "your-program-id"
-```
-
-7. Run the tests
-
-```sh
-anchor test
-```
-
-8. Start a local Solana node
-
-```sh
-solana-test-validator
+bash ./scripts/build.sh
 ```
 
 9. Fund your wallet
 
 ```sh
-bash ./solana-airdrop.sh <your Solana address>
+bash ./scripts/solana-airdrop.sh
 ```
 
 10. Deploy contract
 
 ```sh
 anchor deploy
-```
-
-11. Copy IDL in the Application using the copy script
-
-```sh
-node copyIdl.js
 ```
 
 12. Change into the **app** directory and install the dependencies:
