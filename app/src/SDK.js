@@ -48,14 +48,6 @@ class RouterSDK {
       .rpc({
         commitment: "confirmed",
       });
-
-    const programAccount =
-      await this.erc20RouterContract.account.programAccount.fetch(
-        programAccountPDA
-      );
-
-    console.log("Count: ", programAccount.count.toString());
-    return programAccount.count.toString();
   }
 
   async createCounter(baseAccount) {
@@ -97,6 +89,21 @@ class RouterSDK {
       baseAccount.publicKey
     );
     return count.toString();
+  }
+
+  async totalProgramCount() {
+    const [programAccountPDA] = await PublicKey.findProgramAddress(
+      [utils.bytes.utf8.encode("initialize")],
+      this.erc20RouterContract.programId
+    );
+
+    const programAccount =
+      await this.erc20RouterContract.account.programAccount.fetch(
+        programAccountPDA
+      );
+
+    console.log("Count: ", programAccount.count.toString());
+    return programAccount.count.toString();
   }
 }
 

@@ -49,6 +49,8 @@ function useFacadeWallet(wallet) {
 function App() {
   const [initialized, setInitialized] = useState(false);
   const [value, setValue] = useState(null);
+  const [programValue, setProgramValue] = useState(null);
+
   const wallet = useWallet();
 
   const { provider } = useFacadeWallet(wallet);
@@ -92,6 +94,9 @@ function App() {
     if (sdk) {
       const count = await sdk.increment(baseAccount);
       setValue(count);
+
+      const programCount = await sdk.totalProgramCount();
+      setProgramValue(programCount);
     }
   }
 
@@ -125,7 +130,10 @@ function App() {
           {value && <button onClick={increment}>Increment counter</button>}
 
           {value && value >= Number(0) ? (
-            <h2>{value}</h2>
+            <>
+              <h2>User value: {value}</h2>
+              <h2>Program value: {programValue}</h2>
+            </>
           ) : initialized ? (
             <h2>Counter not created</h2>
           ) : (
