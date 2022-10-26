@@ -1,1 +1,52 @@
-{"version":"0.1.0","name":"mysolanaapp","instructions":[{"name":"create","accounts":[{"name":"baseAccount","isMut":true,"isSigner":true},{"name":"user","isMut":true,"isSigner":true},{"name":"systemProgram","isMut":false,"isSigner":false}],"args":[]},{"name":"increment","accounts":[{"name":"baseAccount","isMut":true,"isSigner":false}],"args":[]}],"accounts":[{"name":"BaseAccount","type":{"kind":"struct","fields":[{"name":"count","type":"u64"}]}}],"metadata":{"address":"27cQpG8XWtgSyBiiexC7JX8p7cUM24LkWth9JgPzhyGe"}}
+{
+  "version": "0.1.0",
+  "name": "mysolanaapp",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        { "name": "programAccount", "isMut": true, "isSigner": false },
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "create",
+      "accounts": [
+        { "name": "baseAccount", "isMut": true, "isSigner": true },
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "increment",
+      "accounts": [
+        { "name": "baseAccount", "isMut": true, "isSigner": false },
+        { "name": "programAccount", "isMut": true, "isSigner": false }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "BaseAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [{ "name": "count", "type": "u64" }]
+      }
+    },
+    {
+      "name": "ProgramAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "count", "type": "u64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    }
+  ],
+  "metadata": { "address": "Hyjbe6XiJY2AHd8wTKSPJsrTborNhxg67VErtZfX6e1P" }
+}

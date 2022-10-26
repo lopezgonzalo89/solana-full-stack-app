@@ -1,8 +1,7 @@
 import "./App.css";
-import { useState } from "react";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { Program, AnchorProvider, web3, utils } from "@project-serum/anchor";
-import idl from "./idl.json";
+import { useEffect, useState } from "react";
+import { Connection } from "@solana/web3.js";
+import { AnchorProvider, web3 } from "@project-serum/anchor";
 
 import { getPhantomWallet } from "@solana/wallet-adapter-wallets";
 import {
@@ -14,122 +13,86 @@ import {
   WalletModalProvider,
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
+import { RouterSDK } from "./SDK";
 
 const wallets = [
   /* view list of available wallets at https://github.com/solana-labs/wallet-adapter#wallets */
   getPhantomWallet(),
 ];
 
-const { SystemProgram, Keypair } = web3;
+const { Keypair } = web3;
 /* create an account  */
 const baseAccount = Keypair.generate();
 const opts = {
   preflightCommitment: "processed",
 };
-const programID = new PublicKey(idl.metadata.address);
+
+function useFacadeWallet(wallet) {
+  const [provider, setProvider] = useState(null);
+
+  useEffect(() => {
+    if (wallet) {
+      const network = "http://127.0.0.1:8899";
+      const connection = new Connection(network, opts.preflightCommitment);
+      const provider = new AnchorProvider(
+        connection,
+        wallet,
+        opts.preflightCommitment
+      );
+      setProvider(provider);
+    }
+  }, [wallet]);
+
+  return { provider };
+}
 
 function App() {
   const [initialized, setInitialized] = useState(false);
   const [value, setValue] = useState(null);
   const wallet = useWallet();
 
-  async function getProvider() {
-    /* create the provider and return it to the caller */
-    /* network set to local network for now */
-    const network = "http://127.0.0.1:8899";
-    const connection = new Connection(network, opts.preflightCommitment);
+  const { provider } = useFacadeWallet(wallet);
 
-    const provider = new AnchorProvider(
-      connection,
-      wallet,
-      opts.preflightCommitment
-    );
-    return provider;
-  }
+  const [sdk, setSDK] = useState(null);
+
+  useEffect(() => {
+    if (provider) {
+      const loadSDK = async () => {
+        if (provider) {
+          const _sdk = new RouterSDK(provider, {}, "SOLANA");
+          setSDK(_sdk);
+        }
+      };
+
+      loadSDK();
+    }
+  }, [provider]);
 
   async function initialize() {
-    const provider = await getProvider();
-    const program = new Program(idl, programID, provider);
-
-    const [programAccountPDA] = await PublicKey.findProgramAddress(
-      [utils.bytes.utf8.encode("initialize")],
-      program.programId
-    );
-
-    await program.methods
-      .initialize()
-      .accounts({
-        programAccount: programAccountPDA,
-        user: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      })
-      .signers([])
-      .rpc({
-        commitment: "confirmed",
-      });
-
-    console.log("%c POST INITIALIZE", "color: green");
-
-    const programAccount = await program.account.programAccount.fetch(
-      programAccountPDA
-    );
-
-    console.log("Count: ", programAccount.count.toString());
-    setInitialized(true);
+    try {
+      await sdk.initialize();
+      setInitialized(true);
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   async function createCounter() {
-    const provider = await getProvider();
-    /* create the program interface combining the idl, program ID, and provider */
-    const program = new Program(idl, programID, provider);
-    try {
-      /* interact with the program via rpc */
-      await program.methods
-        .create()
-        .accounts({
-          baseAccount: baseAccount.publicKey,
-          user: provider.wallet.publicKey,
-          systemProgram: SystemProgram.programId,
-        })
-        .signers(baseAccount)
-        .rpc({
-          commitment: "confirmed",
-        });
-
-      const account = await program.account.baseAccount.fetch(
-        baseAccount.publicKey
-      );
-      console.log("account: ", account);
-      setValue(account.count.toString());
-    } catch (err) {
-      console.log("Transaction error: ", err);
+    if (sdk) {
+      try {
+        const count = await sdk.createCounter(baseAccount);
+        setValue(count);
+      } catch (err) {
+        console.log("Transaction error: ", err);
+      }
     }
   }
 
   async function increment() {
-    const provider = await getProvider();
-    const program = new Program(idl, programID, provider);
-
-    const [programAccountPDA] = await PublicKey.findProgramAddress(
-      [utils.bytes.utf8.encode("initialize")],
-      program.programId
-    );
-
-    await program.methods
-      .increment()
-      .accounts({
-        baseAccount: baseAccount.publicKey,
-        programAccount: programAccountPDA,
-      })
-      .rpc({
-        commitment: "confirmed",
-      });
-
-    const account = await program.account.baseAccount.fetch(
-      baseAccount.publicKey
-    );
-    console.log("account: ", account);
-    setValue(account.count.toString());
+    if (sdk) {
+      const count = await sdk.increment(baseAccount);
+      setValue(count);
+    }
   }
 
   if (!wallet.connected) {
@@ -148,6 +111,12 @@ function App() {
   } else {
     return (
       <div className="App">
+        {!provider && (
+          <div>
+            CARGANDO PROVIDER{" "}
+            <button onClick={() => console.log(provider)}>ver provider</button>
+          </div>
+        )}
         <div>
           {!initialized && (
             <button onClick={initialize}>Initialize Program</button>
