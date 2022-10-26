@@ -72,7 +72,7 @@ solana-test-validator
 9. Fund your wallet
 
 ```sh
-bash ./solana-airdrop <your Solana address>
+bash ./solana-airdrop.sh <your Solana address>
 ```
 
 10. Deploy contract
